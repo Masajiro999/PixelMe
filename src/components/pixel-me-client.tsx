@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { UploadCloud, Download, Share2, Palette, RefreshCw, AlertCircle } from 'lucide-react';
+import { UploadCloud, Download, Share2, Palette, RefreshCw, AlertCircle, KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -10,6 +10,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cropFaces } from '@/ai/flows/crop-faces';
 import { generatePixelArt } from '@/ai/flows/generate-pixel-art';
 import { useToast } from "@/hooks/use-toast";
+import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type LoadingStep = 'idle' | 'cropping' | 'pixelating';
 
@@ -23,6 +25,8 @@ export function PixelMeClient() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+  const [isKeySet, setIsKeySet] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -47,19 +51,26 @@ export function PixelMeClient() {
   };
   
   const processImage = useCallback(async () => {
+    if (!apiKey) {
+        setError('API Key is not set. Please set your API key first.');
+        setLoadingStep('idle');
+        setIsKeySet(false);
+        return;
+    }
+
     if (loadingStep === 'cropping' && originalImage) {
       try {
-        const { croppedPhotoDataUri } = await cropFaces({ photoDataUri: originalImage });
+        const { croppedPhotoDataUri } = await cropFaces({ photoDataUri: originalImage, apiKey });
         setCroppedImage(croppedPhotoDataUri);
         setLoadingStep('pixelating');
       } catch (e) {
         console.error(e);
-        setError('We could not process this image. Please try another photo with a clear subject.');
+        setError('We could not process this image. Please check your API key or try another photo with a clear subject.');
         setLoadingStep('idle');
       }
     } else if (loadingStep === 'pixelating' && croppedImage) {
       try {
-        const { pixelArtDataUri } = await generatePixelArt({ photoDataUri: croppedImage });
+        const { pixelArtDataUri } = await generatePixelArt({ photoDataUri: croppedImage, apiKey });
         setPixelArt(pixelArtDataUri);
         setLoadingStep('idle');
       } catch (e) {
@@ -68,7 +79,7 @@ export function PixelMeClient() {
         setLoadingStep('idle');
       }
     }
-  }, [originalImage, croppedImage, loadingStep]);
+  }, [originalImage, croppedImage, loadingStep, apiKey]);
 
   useEffect(() => {
     if (loadingStep !== 'idle') {
@@ -122,7 +133,47 @@ export function PixelMeClient() {
     }
   };
 
+  const handleApiKeySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (apiKey.trim()) {
+      setIsKeySet(true);
+      setError(null);
+    } else {
+      setError("Please enter a valid API key.");
+    }
+  };
+
   const renderContent = () => {
+    if (!isKeySet) {
+      return (
+        <CardContent className="flex flex-col items-center justify-center p-8 min-h-[300px]">
+          <div className="w-full max-w-md text-center">
+            <KeyRound className="mx-auto h-12 w-12 text-primary mb-4" />
+            <h2 className="text-2xl font-semibold mb-2">Enter Your Gemini API Key</h2>
+            <p className="text-muted-foreground mb-6">
+              To use this app, you need a Google AI Gemini API key. You can get one for free from Google AI Studio.
+            </p>
+            <form onSubmit={handleApiKeySubmit} className="flex flex-col gap-4">
+              <Input
+                id="apiKey"
+                type="password"
+                placeholder="Paste your API key here"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                required
+              />
+              <Button type="submit" className="w-full">
+                Save and Continue
+              </Button>
+            </form>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-primary mt-4 inline-block">
+              Get an API Key &rarr;
+            </a>
+          </div>
+        </CardContent>
+      );
+    }
+
     if (loadingStep !== 'idle') {
       const progressValue = loadingStep === 'cropping' ? 33 : 66;
       const loadingText = loadingStep === 'cropping' 
@@ -192,12 +243,28 @@ export function PixelMeClient() {
   
   return (
     <Card className="w-full max-w-2xl mx-auto shadow-2xl shadow-primary/10 overflow-hidden rounded-2xl">
-      <CardHeader className="text-center bg-card border-b p-6">
-        <div className="flex justify-center items-center gap-3">
-            <Palette className="h-8 w-8 text-primary" />
-            <CardTitle className="text-4xl font-headline font-bold">PixelMe</CardTitle>
-        </div>
-        <CardDescription className="text-base">Transform your selfie into a cute pixel art portrait</CardDescription>
+      <CardHeader className="border-b p-6">
+          <div className="flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                  <Palette className="h-8 w-8 text-primary" />
+                  <CardTitle className="text-4xl font-headline font-bold">PixelMe</CardTitle>
+              </div>
+              {isKeySet && (
+                  <TooltipProvider>
+                      <Tooltip>
+                          <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" onClick={() => setIsKeySet(false)}>
+                                  <KeyRound className="h-5 w-5" />
+                              </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                              <p>Change API Key</p>
+                          </TooltipContent>
+                      </Tooltip>
+                  </TooltipProvider>
+              )}
+          </div>
+        <CardDescription className="text-base pt-2">Transform your selfie into a cute pixel art portrait</CardDescription>
       </CardHeader>
       {renderContent()}
     </Card>

@@ -8,11 +8,12 @@
  * - GeneratePixelArtOutput - The return type for the generatePixelArt function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-import wav from 'wav';
+import { genkit } from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
+import { z } from 'genkit';
 
 const GeneratePixelArtInputSchema = z.object({
+  apiKey: z.string().describe('The Google AI API Key.'),
   photoDataUri: z
     .string()
     .describe(
@@ -26,83 +27,45 @@ const GeneratePixelArtOutputSchema = z.object({
     .string()
     .describe('The generated pixel art as a data URI.'),
 });
-export type GeneratePixelArtOutput = z.infer<typeof GeneratePixelArtOutputSchema>;
+export type GeneratePixelArtOutput = z.infer<
+  typeof GeneratePixelArtOutputSchema
+>;
 
-export async function generatePixelArt(input: GeneratePixelArtInput): Promise<GeneratePixelArtOutput> {
-  return generatePixelArtFlow(input);
-}
+export async function generatePixelArt(
+  input: GeneratePixelArtInput
+): Promise<GeneratePixelArtOutput> {
+  const ai = genkit({ plugins: [googleAI({ apiKey: input.apiKey })] });
 
-const generatePixelArtPrompt = ai.definePrompt({
-  name: 'generatePixelArtPrompt',
-  input: {schema: GeneratePixelArtInputSchema},
-  output: {schema: GeneratePixelArtOutputSchema},
-  prompt: [
-    {media: {url: '{{{photoDataUri}}}'}},
-    {
-      text: `Create a cute anime-style pixel art portrait of a young person, based on the provided image. Chibi proportions, big sparkling eyes, soft pastel color palette, smooth pixel shading, detailed hair, with expressive face. 128x128 resolution, retro 16-bit game character style, front-facing. Background simple or transparent.`,
-    },
-  ],
-  config: {
-    safetySettings: [
+  const { media } = await ai.generate({
+    model: 'googleai/gemini-2.0-flash-preview-image-generation',
+    prompt: [
+      { media: { url: input.photoDataUri } },
       {
-        category: 'HARM_CATEGORY_HATE_SPEECH',
-        threshold: 'BLOCK_ONLY_HIGH',
-      },
-      {
-        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-        threshold: 'BLOCK_NONE',
-      },
-      {
-        category: 'HARM_CATEGORY_HARASSMENT',
-        threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-      },
-      {
-        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-        threshold: 'BLOCK_LOW_AND_ABOVE',
+        text: `Create a cute anime-style pixel art portrait of a young person, based on the provided image. Chibi proportions, big sparkling eyes, soft pastel color palette, smooth pixel shading, detailed hair, with expressive face. 128x128 resolution, retro 16-bit game character style, front-facing. Background simple or transparent.`,
       },
     ],
-    responseModalities: ['TEXT', 'IMAGE'],
-  },
-});
-
-const generatePixelArtFlow = ai.defineFlow(
-  {
-    name: 'generatePixelArtFlow',
-    inputSchema: GeneratePixelArtInputSchema,
-    outputSchema: GeneratePixelArtOutputSchema,
-  },
-  async input => {
-    const {media} = await ai.generate({
-      model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: [
-        {media: {url: input.photoDataUri}},
+    config: {
+      safetySettings: [
         {
-          text: `Create a cute anime-style pixel art portrait of a young person, based on the provided image. Chibi proportions, big sparkling eyes, soft pastel color palette, smooth pixel shading, detailed hair, with expressive face. 128x128 resolution, retro 16-bit game character style, front-facing. Background simple or transparent.`,
+          category: 'HARM_CATEGORY_HATE_SPEECH',
+          threshold: 'BLOCK_ONLY_HIGH',
+        },
+        {
+          category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+          threshold: 'BLOCK_NONE',
+        },
+        {
+          category: 'HARM_CATEGORY_HARASSMENT',
+          threshold: 'BLOCK_MEDIUM_AND_ABOVE',
+        },
+        {
+          category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+          threshold: 'BLOCK_LOW_AND_ABOVE',
         },
       ],
-      config: {
-        safetySettings: [
-          {
-            category: 'HARM_CATEGORY_HATE_SPEECH',
-            threshold: 'BLOCK_ONLY_HIGH',
-          },
-          {
-            category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-            threshold: 'BLOCK_NONE',
-          },
-          {
-            category: 'HARM_CATEGORY_HARASSMENT',
-            threshold: 'BLOCK_MEDIUM_AND_ABOVE',
-          },
-          {
-            category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-            threshold: 'BLOCK_LOW_AND_ABOVE',
-          },
-        ],
-        responseModalities: ['TEXT', 'IMAGE'],
-      },
-    });
+      responseModalities: ['TEXT', 'IMAGE'],
+    },
+  });
 
-    return {pixelArtDataUri: media.url!};
-  }
-);
+  return { pixelArtDataUri: media.url! };
+}
