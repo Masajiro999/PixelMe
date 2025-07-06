@@ -41,16 +41,20 @@ export async function generatePixelArt(
     prompt: [
       { media: { url: input.photoDataUri } },
       {
-        text: `Transform the input photo into a cute, chibi-style pixel art portrait based on the person in the image.
+        text: `You are an expert pixel art converter. Your single most important task is to convert the provided image into a high-quality pixel art representation.
 
-**Instructions:**
-1.  **Style:** Convert the person in the photo to an anime-style "chibi" character with a large head, small body, and big, expressive eyes.
-2.  **Pixelation:** The final output must be clean 8-bit or 16-bit style pixel art.
-3.  **Colors:** Use a soft, pastel color palette.
-4.  **Adaptation:** Adapt the clothing and hairstyle from the original photo into the pixel art style. Do not add new items like hats or accessories unless they are in the original photo.
-5.  **Background:** The background must be transparent.
+**CRITICAL INSTRUCTIONS (MUST BE FOLLOWED):**
 
-**Negative Prompts:** no realism, no photorealism, no harsh shadows, no text, no artifacts, no extra objects.`,
+1.  **PIXEL ART CONVERSION (ABSOLUTE REQUIREMENT):** The final output **MUST** be clean, stylized pixel art. It should look like it was created for a retro video game (8-bit or 16-bit style). This is the highest priority. Do not return a smooth, illustrated, or photorealistic image. It **MUST** be pixelated.
+
+2.  **PRESERVE SILHOUETTE:** Strictly adhere to the silhouette, pose, and composition of the original input image. **DO NOT** change the person's pose, proportions, or add/remove major elements. The goal is to transform the *style*, not the *subject*.
+
+3.  **STYLE & COLOR:**
+    *   Apply a soft, pastel color palette.
+    *   Simplify details from the original photo into the pixel art style. This includes clothing and hairstyle.
+    *   The background **MUST** be transparent.
+
+**NEGATIVE PROMPTS:** no realism, no photorealism, no smooth gradients, no anti-aliasing, no harsh shadows, no text, no artifacts, no extra objects, do not change the pose.`,
       },
     ],
     config: {
