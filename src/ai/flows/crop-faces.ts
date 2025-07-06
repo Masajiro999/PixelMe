@@ -51,6 +51,6 @@ const cropFacesFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return {croppedPhotoDataUri: output!};
+    return output!;
   }
 );
