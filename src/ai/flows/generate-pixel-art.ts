@@ -4,7 +4,7 @@
  * @fileOverview Transforms a cropped image into a 128x128 pixel art portrait in a 'chibi' anime style with pastel colors.
  *
  * - generatePixelArt - A function that handles the pixel art generation process.
- * - GeneratePixelArtInput - The input type for the generatePixelArt function.
+ * - GeneratePixelArtInput - The input type for the generatePixelart function.
  * - GeneratePixelArtOutput - The return type for the generatePixelArt function.
  */
 
@@ -41,20 +41,22 @@ export async function generatePixelArt(
     prompt: [
       { media: { url: input.photoDataUri } },
       {
-        text: `You are an expert pixel art converter. Your single most important task is to convert the provided image into a high-quality pixel art representation.
+        text: `You are an expert pixel art converter. Your single most important task is to convert the provided image into a high-quality pixel art representation, in the style of a classic Famicom (8-bit) video game.
 
 **CRITICAL INSTRUCTIONS (MUST BE FOLLOWED):**
 
-1.  **PIXEL ART CONVERSION (ABSOLUTE REQUIREMENT):** The final output **MUST** be clean, stylized pixel art. It should look like it was created for a retro video game (8-bit or 16-bit style). This is the highest priority. Do not return a smooth, illustrated, or photorealistic image. It **MUST** be pixelated.
+1.  **PIXEL ART CONVERSION (ABSOLUTE REQUIREMENT):** The final output **MUST** be clean, stylized pixel art. It must look like it was created for a retro video game. This is the highest priority. Do not return a smooth, illustrated, or photorealistic image. It **MUST** be pixelated.
 
 2.  **PRESERVE SILHOUETTE:** Strictly adhere to the silhouette, pose, and composition of the original input image. **DO NOT** change the person's pose, proportions, or add/remove major elements. The goal is to transform the *style*, not the *subject*.
 
-3.  **STYLE & COLOR:**
-    *   Apply a soft, pastel color palette.
-    *   Simplify details from the original photo into the pixel art style. This includes clothing and hairstyle.
-    *   The background **MUST** be transparent.
+3.  **STYLE & AESTHETICS:**
+    *   **Style:** Famicom-style / 8-bit retro anime aesthetic.
+    *   **Outline:** Apply subtle anti-aliasing *only to the outermost silhouette line* to make it appear smoother. The internal details of the character must remain sharp, blocky, and without anti-aliasing.
+    *   **Color:** Use a soft, limited pastel color palette suitable for the 8-bit anime style.
+    *   **Details:** Simplify details from the original photo (like clothing and hair) into the pixel art style.
+    *   **Background:** The background **MUST** be transparent.
 
-**NEGATIVE PROMPTS:** no realism, no photorealism, no smooth gradients, no anti-aliasing, no harsh shadows, no text, no artifacts, no extra objects, do not change the pose.`,
+**NEGATIVE PROMPTS:** no realism, no photorealism, no smooth gradients (except for the silhouette anti-aliasing), no harsh shadows, no text, no artifacts, no extra objects, do not change the pose.`,
       },
     ],
     config: {
