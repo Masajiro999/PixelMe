@@ -42,7 +42,7 @@ const cropFacesFlow = ai.defineFlow(
       model: 'googleai/gemini-2.0-flash-preview-image-generation',
       prompt: [
         { media: { url: input.photoDataUri } },
-        { text: 'You are an AI image processing expert. Identify the primary person in the image. Your task is to isolate this person. First, remove the background, making it transparent. Then, crop the image to frame the entire person (from head to toe if visible). Ensure the final image has a 1:1 aspect ratio by adding transparent padding if necessary, and center the person within this square frame. Return only the resulting image.' },
+        { text: 'You are an AI image processing expert. Your task is to prepare an image for use as a portrait. First, identify the primary person in the image. Then, remove the background, making it transparent. Finally, ensure the image has a 1:1 aspect ratio by adding transparent padding as needed, but do not crop the original image content. Center the resulting subject within the square frame. Return only the resulting image.' },
       ],
       config: {
         responseModalities: ['TEXT', 'IMAGE'],
