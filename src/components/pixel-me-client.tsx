@@ -54,7 +54,7 @@ export function PixelMeClient() {
         setLoadingStep('pixelating');
       } catch (e) {
         console.error(e);
-        setError('Could not find a face in the image. Please try a different photo with a clear face.');
+        setError('We could not process this image. Please try another photo with a clear subject.');
         setLoadingStep('idle');
       }
     } else if (loadingStep === 'pixelating' && croppedImage) {
@@ -126,7 +126,7 @@ export function PixelMeClient() {
     if (loadingStep !== 'idle') {
       const progressValue = loadingStep === 'cropping' ? 33 : 66;
       const loadingText = loadingStep === 'cropping' 
-        ? "Finding and cropping face..."
+        ? "Isolating subject..."
         : "Creating your pixel portrait...";
         
       return (
