@@ -41,7 +41,7 @@ export async function generatePixelArt(
     prompt: [
       { media: { url: input.photoDataUri } },
       {
-        text: `Create a cute anime-style pixel art portrait of a young person, based on the provided image. Chibi proportions, big sparkling eyes, soft pastel color palette, smooth pixel shading, detailed hair, with expressive face. 128x128 resolution, retro 16-bit game character style, front-facing. Background simple or transparent.`,
+        text: `Convert this photo into a pixel art anime-style girl taking a selfie. Use chibi-like proportions with big sparkling eyes, soft rounded facial features, and smooth shoulder-length hair with subtle shading. Outfit should be a cute pajama top with colorful plus-sign patterns. Include a smartphone in her hand as she's taking a selfie. Use soft pastel tones and clean pixelated edges. Background should be minimal or white. Add a small floating heart near the face for a cute effect. Maintain a wholesome and cheerful vibe.`,
       },
     ],
     config: {
