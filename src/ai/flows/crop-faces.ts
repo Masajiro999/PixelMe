@@ -31,26 +31,28 @@ export async function cropFaces(input: CropFacesInput): Promise<CropFacesOutput>
   return cropFacesFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'cropFacesPrompt',
-  input: {schema: CropFacesInputSchema},
-  output: {schema: CropFacesOutputSchema},
-  prompt: `You are an AI image processing expert. You will identify the face in the image, crop it, and return the cropped image as a data URI.
-
-  The original image is here: {{media url=photoDataUri}}
-
-  Return only the data URI of the cropped image.
-  `,
-});
-
 const cropFacesFlow = ai.defineFlow(
   {
     name: 'cropFacesFlow',
     inputSchema: CropFacesInputSchema,
     outputSchema: CropFacesOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  async (input) => {
+    const { media } = await ai.generate({
+      model: 'googleai/gemini-2.0-flash-preview-image-generation',
+      prompt: [
+        { media: { url: input.photoDataUri } },
+        { text: 'You are an AI image processing expert. Identify the primary face in the image, then crop the image to show only the face with a 1:1 aspect ratio. Return only the cropped image without any other modifications.' },
+      ],
+      config: {
+        responseModalities: ['TEXT', 'IMAGE'],
+      },
+    });
+
+    if (!media || !media.url) {
+        throw new Error("Failed to crop face from image.");
+    }
+
+    return { croppedPhotoDataUri: media.url };
   }
 );
